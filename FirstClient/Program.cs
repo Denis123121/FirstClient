@@ -1,41 +1,41 @@
 ﻿using System.Net.Sockets;
 using System.Net;
 using System.Text;
+using System.Text.Json;
+using FirstClient;
+using FirstClient.NetEngine;
+using FirstClient.NetModel;
 
-void Log(string msg)
+ClientEngine clientEngine = new ClientEngine("127.0.0.1", 34536);
+clientEngine.ConnectToServer();
+
+Wallet shop = new Wallet()
 {
-    Console.WriteLine($"Log: {DateTime.Now}  {msg}");
+    GoldCoins = 10,
+    SilverCoins = 100
+};
+
+Request request = new Request()
+{
+    Command = Commands.AddAge,
+    JsonData = JsonSerializer.Serialize(shop)
+};
+
+string messageToServer = JsonSerializer.Serialize(request);
+
+clientEngine.SendMessage(messageToServer);
+string messageFromServer = clientEngine.ReceiveMessage();
+
+Response response = JsonSerializer.Deserialize<Response>(messageFromServer);
+
+if (response.Status == Statuses.Ok)
+{
+    Wallet receivedWallet = JsonSerializer.Deserialize<Wallet>(response.JsonData);
+    Console.WriteLine(receivedWallet);
+}
+else
+{
+    Console.WriteLine($"Something wrong Status = {response.Status}");
 }
 
-Socket handler = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse("192.168.8.162"), 36546);
-
-handler.Connect(ipEndPoint);
-
-Log($"Connected to server {handler.RemoteEndPoint}");
-
-Console.WriteLine("Введите сообщение");
-string messageToServer = Console.ReadLine();
-
-byte[] outputBytes = Encoding.Unicode.GetBytes(messageToServer);
-handler.Send(outputBytes);
-
-Log($"Message to server sent: {messageToServer}");
-StringBuilder messageBuilder = new StringBuilder();
-
-do
-{
-    byte[] inputBytes = new byte[1024];
-    int countBytes = handler.Receive(inputBytes);
-    messageBuilder.Append(Encoding.Unicode.GetString(inputBytes, 0, countBytes));
-} while (handler.Available > 0);
-
-string messageFromServer = messageBuilder.ToString();
-
-Log($"Message from server received: {messageFromServer}");
-
-handler.Shutdown(SocketShutdown.Both);
-handler.Close();
-
-Log($"Client closed");
-
+clientEngine.CloseClientSocket();
