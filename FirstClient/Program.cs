@@ -9,16 +9,35 @@ using FirstClient.NetModel;
 ClientEngine clientEngine = new ClientEngine("127.0.0.1", 34536);
 clientEngine.ConnectToServer();
 
-Wallet shop = new Wallet()
+Wallet wallet = new Wallet()
 {
     GoldCoins = 10,
     SilverCoins = 100
 };
 
+int action;
+Console.WriteLine("1. Инвестировать в золото: ");
+Console.WriteLine("2. Инвестировать в серебро: ");
+
+Console.Write("Выберите пункт меню: ");
+action = int.Parse(Console.ReadLine());
+
+string command = "";
+
+if (action == 1)
+{
+    command = Commands.InvestInGoldCoins;
+}
+else if (action == 2)
+{
+    command = Commands.InvestInSilverCoins;
+}
+
+
 Request request = new Request()
 {
-    Command = Commands.AddAge,
-    JsonData = JsonSerializer.Serialize(shop)
+    Command = command,
+    JsonData = JsonSerializer.Serialize(wallet)
 };
 
 string messageToServer = JsonSerializer.Serialize(request);

@@ -2,5 +2,6 @@
 
 public class Commands
 {
-    public static string AddAge { get; } = "AddAge";
+    public static string InvestInGoldCoins { get; } = "InvestInGoldCoins";
+    public static string InvestInSilverCoins { get; } = "InvestInSilverCoins";
 }
